@@ -1,0 +1,66 @@
+{
+  "name": "YouTube Transcript Summarizer & Telegram Notifier",
+  "version": 1,
+  "modules": [
+    {
+      "id": 1,
+      "name": "Webhook Trigger",
+      "type": "webhook",
+      "method": "POST",
+      "output": ["youtube_url"]
+    },
+    {
+      "id": 2,
+      "name": "Extract YouTube Video ID",
+      "type": "function",
+      "script": "return inputData.youtube_url.split('v=')[1];",
+      "output": ["video_id"]
+    },
+    {
+      "id": 3,
+      "name": "Get YouTube Transcript",
+      "type": "api",
+      "service": "YouTube",
+      "endpoint": "getTranscript",
+      "input": "video_id",
+      "output": ["transcript"]
+    },
+    {
+      "id": 4,
+      "name": "Split Transcript",
+      "type": "text",
+      "action": "split",
+      "input": "transcript"
+    },
+    {
+      "id": 5,
+      "name": "Concatenate Transcript",
+      "type": "text",
+      "action": "join",
+      "input": "Split Transcript"
+    },
+    {
+      "id": 6,
+      "name": "Summarize & Analyze Transcript",
+      "type": "openai",
+      "model": "gpt-4o-mini",
+      "prompt": "Summarize and analyze this YouTube transcript in 200 words. Include key takeaways and insights.",
+      "input": "Concatenate Transcript",
+      "output": ["summary"]
+    },
+    {
+      "id": 7,
+      "name": "Telegram Notification",
+      "type": "telegram",
+      "action": "sendMessage",
+      "chat_id": "{{YOUR_TELEGRAM_CHAT_ID}}",
+      "text": "🎥 YouTube Summary:\n{{summary}}"
+    },
+    {
+      "id": 8,
+      "name": "Webhook Response",
+      "type": "webhook_response",
+      "input": "summary"
+    }
+  ]
+}
